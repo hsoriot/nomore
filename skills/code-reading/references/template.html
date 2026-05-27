@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TARGET_NAME}} — Code Reading</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --fg: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --accent-light: #eff6ff;
+  --code-bg: #f3f4f6;
+  --tag-bg: #e0e7ff;
+  --tag-fg: #3730a3;
+  --success: #059669;
+  --warn: #d97706;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg);
+  background: var(--bg);
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
+h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--accent);
+}
+h3 { font-size: 0.95rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.4rem; }
+p { margin-bottom: 0.75rem; }
+.purpose {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+}
+.location {
+  display: inline-block;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.8rem;
+  background: var(--code-bg);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  margin-right: 0.3rem;
+}
+.inferred {
+  display: inline-block;
+  font-size: 0.7rem;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+/* Signature block */
+.sig {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.85rem;
+  background: var(--code-bg);
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  overflow-x: auto;
+}
+.sig-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 1.5rem;
+}
+th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+td code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.82rem;
+  background: var(--code-bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+/* Code evidence blocks */
+.evidence {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+.evidence-header {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+pre .line-num {
+  color: #64748b;
+  user-select: none;
+  margin-right: 1rem;
+}
+/* Data flow */
+.flow {
+  background: var(--accent-light);
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+.flow-step {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 0.3rem;
+}
+.flow-step::before {
+  content: "→";
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+.flow-step:first-child::before { content: "⊳"; }
+.flow-step:last-child::before { content: "⊲"; }
+/* Footer */
+.meta {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<h1>{{TARGET_NAME}}</h1>
+<p class="purpose">{{PURPOSE}}</p>
+<span class="location">{{FILE_PATH}}:{{LINE_NUMBER}}</span>
+
+<h2>Position in System</h2>
+<p>{{POSITION_DESCRIPTION}}</p>
+
+<h2>Public Interface</h2>
+<!-- Repeat this block for each function/method -->
+{{#EACH INTERFACE}}
+<div class="sig">{{SIGNATURE}}</div>
+<p class="sig-desc">{{DESCRIPTION}}</p>
+{{/EACH}}
+
+<h2>Dependencies (Outgoing Calls)</h2>
+<table>
+  <thead>
+    <tr><th>Callee</th><th>Location</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <!-- Repeat for each dependency -->
+    {{#EACH OUTGOING}}
+    <tr>
+      <td><code>{{CALLEE_NAME}}</code></td>
+      <td><span class="location">{{CALLEE_LOCATION}}</span></td>
+      <td>{{CALLEE_ROLE}}</td>
+    </tr>
+    {{/EACH}}
+  </tbody>
+</table>
+
+<h2>Callers (Incoming Calls)</h2>
+<table>
+  <thead>
+    <tr><th>Caller</th><th>Location</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <!-- Repeat for each caller -->
+    {{#EACH INCOMING}}
+    <tr>
+      <td><code>{{CALLER_NAME}}</code></td>
+      <td><span class="location">{{CALLER_LOCATION}}</span></td>
+      <td>{{CALLER_CONTEXT}}</td>
+    </tr>
+    {{/EACH}}
+  </tbody>
+</table>
+
+<h2>Data Flow</h2>
+<div class="flow">
+  <!-- Repeat for each step -->
+  {{#EACH DATAFLOW}}
+  <div class="flow-step">{{STEP}}</div>
+  {{/EACH}}
+</div>
+
+<h2>Business Scenario</h2>
+<p>{{BUSINESS_SCENARIO}}</p>
+
+<h2>Design Rationale</h2>
+<p>{{DESIGN_RATIONALE}}</p>
+
+<h2>Key Code Evidence</h2>
+<!-- Repeat for each evidence block -->
+{{#EACH EVIDENCE}}
+<div class="evidence">
+  <div class="evidence-header">{{EVIDENCE_LABEL}} <span class="location">{{EVIDENCE_LOCATION}}</span></div>
+  <pre>{{EVIDENCE_CODE}}</pre>
+</div>
+{{/EACH}}
+
+<div class="meta">
+  Generated by <strong>code-reading</strong> skill · {{GENERATED_DATE}}
+</div>
+
+</body>
+</html>
